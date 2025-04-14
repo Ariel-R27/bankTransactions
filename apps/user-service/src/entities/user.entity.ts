@@ -14,6 +14,9 @@ export class User {
     @Column()
     fullName: string;
 
+    @Column()
+    phone: string;
+
     @Column({ type: 'boolean', default: false})
     isVerified: boolean;
-}
+};

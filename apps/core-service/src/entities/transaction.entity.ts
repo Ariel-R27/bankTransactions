@@ -21,7 +21,7 @@ export class Transaction {
     userId: string;
 
     @Column()
-    accountId: string;
+    accountId: string; //Cuenta de destino
 
     @Column('decimal', { precision: 12, scale: 2 })
     amount: number;
