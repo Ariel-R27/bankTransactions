@@ -24,5 +24,17 @@ export class AccountService {
 
     async findOne(accountId: string): Promise<Account | null> {
         return this.accountRepository.findOne({ where: { id: accountId} });
-    }
+    };
+
+    async updateAccountBalance(accountId: string, addedAmount: number): Promise<Account>{
+        const account = await this.accountRepository.findOne({ where: { id: accountId} });
+        if(!account) {
+            throw new Error('Account not found');
+        }
+
+        //Update account amount
+        account.amount += addedAmount;
+        
+        return await this.accountRepository.save(account);
+    };
 }

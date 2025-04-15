@@ -14,12 +14,7 @@ export class UserController {
 
     @Get(':userId/validate')
     async validateUserAccount(@Param('userId') userId: string){
-        console.log("Estoy en servicio USer: ");
-
         const user = await this.userService.findOne(userId)
-
-        console.log("USer: ",user);
-
         if(!user) {
             throw new HttpException('Invalid user account', HttpStatus.BAD_REQUEST);
         }

@@ -2,6 +2,8 @@ import { Body, Controller, Get, HttpException, HttpStatus, Param, Post } from '@
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { Account } from 'src/entities/account.entity';
+import { IsNumber } from 'class-validator';
+import { updateBalanceDto } from './dto/update-acountamount.dto';
 
 @Controller('account')
 export class AccountController {
@@ -14,16 +16,17 @@ export class AccountController {
 
     @Get(':accountId/validate')
     async validateAccount(@Param('accountId') accountId: string){
-
-        console.log("Estoy en servicio Account: ");
-
         const account = await this.accountService.findOne(accountId);
 
-        console.log("Account: ",account);
-        
         if(!account || account.isBlocked || !account.isActive) {
             throw new HttpException('Account is not valid', HttpStatus.BAD_REQUEST);
         }
         return { status: 'valid' };
+    };
+
+    @Post(':accountId/update-balance')
+    async updateBalance(@Param('accountId') accountId: string, @Body() body: updateBalanceDto ){
+        const updateAccount = await this.accountService.updateAccountBalance(accountId, body.amount);
+        return { status: 'success', updatedBalance: updateAccount.amount };
     };
 }
