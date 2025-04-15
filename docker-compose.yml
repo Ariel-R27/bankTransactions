@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  postgres_core:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: core_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata_core:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  postgres_user:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata_user:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  postgres_account:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: account_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata_account:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+  core-service:
+    build:
+      context: .
+      dockerfile: apps/core-service/Dockerfile
+    environment:
+      DB_HOST: postgres_core
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: core_db
+    depends_on:
+      - postgres_core
+    ports:
+      - "3000:3000"
+
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+    environment:
+      DB_HOST: postgres_user
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: user_db
+    depends_on:
+      - postgres_user
+    ports:
+      - "3001:3001"
+
+  account-service:
+    build:
+      context: .
+      dockerfile: apps/account-service/Dockerfile
+    environment:
+      DB_HOST: postgres_account
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: account_db
+    depends_on:
+      - postgres_account
+    ports:
+      - "3002:3002"
+
+volumes:
+  pgdata_core:
+  pgdata_user:
+  pgdata_account:

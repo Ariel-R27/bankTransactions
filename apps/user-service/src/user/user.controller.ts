@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from 'src/entities/user.entity';
@@ -10,5 +10,19 @@ export class UserController {
     @Post('createUser')
     createUser(@Body() dto: CreateUserDto): Promise<User>{
         return this.userService.createUser(dto);
+    };
+
+    @Get(':userId/validate')
+    async validateUserAccount(@Param('userId') userId: string){
+        console.log("Estoy en servicio USer: ");
+
+        const user = await this.userService.findOne(userId)
+
+        console.log("USer: ",user);
+
+        if(!user) {
+            throw new HttpException('Invalid user account', HttpStatus.BAD_REQUEST);
+        }
+        return { status: 'valid' };
     };
 }

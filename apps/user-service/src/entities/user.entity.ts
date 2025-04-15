@@ -16,7 +16,4 @@ export class User {
 
     @Column()
     phone: string;
-
-    @Column({ type: 'boolean', default: false})
-    isVerified: boolean;
 };

@@ -39,6 +39,6 @@ export class Transaction {
     })
     status: TransactionStatus;
 
-    //@CreateDateColumn()
-    //createdAt: Date;
+    @CreateDateColumn()
+    createdAt: Date;
 }
