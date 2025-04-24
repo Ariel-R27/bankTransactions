@@ -6,6 +6,7 @@ import { Transaction } from './entities/transaction.entity';
 import { TransactionService } from './transaction/transaction.service';
 import { TransactionController } from './transaction/transaction.controller';
 import { HttpModule } from '@nestjs/axios';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -21,6 +22,20 @@ import { HttpModule } from '@nestjs/axios';
     }),
     TypeOrmModule.forFeature([Transaction]),
     HttpModule,
+    ClientsModule.register([
+      {
+        name: 'KAFKA_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            brokers: ['kafka:9092']
+          },
+          consumer: {
+            groupId: 'core-consumer',
+          },
+        },
+      },
+    ]),
   ],
   controllers: [AppController, TransactionController],
   providers: [AppService, TransactionService],
