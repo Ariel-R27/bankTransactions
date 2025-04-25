@@ -3,7 +3,7 @@ import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction, TransactionStatus, TransactionType } from 'src/entities/transaction.entity';
 import { Repository } from 'typeorm';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 import { parse } from 'path';
 import { ClientKafka } from '@nestjs/microservices';
 
@@ -54,13 +54,21 @@ export class TransactionService implements OnModuleInit {
         //Step 3: Based on responses, update the transaction status
         // In this case, we need to wait for validation responses, so will use listeners in user-service and account-service 
         const userValid = await this.waitForUserValidation(data.userId);
+
+        console.log("Pase de la validacion del usuario por el evento");
+
         if (!userValid) {
             //If the user isn't valid, we update transacction state to REJECTED 
             await this.updateTransactionStatus(savedTransaction.id, TransactionStatus.REJECTED);
             return savedTransaction;
         }
 
+        console.log("Pase de la validacion del usuario y no me quede en el If");
+
         const accountValid = await this.waitForAccountValidation(data.accountId);
+
+        console.log("Pase de la validacion de la cuenta por el evento");
+
         if (!accountValid) {
             //If the account isn't valid, we update transacction state to REJECTED
             await this.updateTransactionStatus(savedTransaction.id, TransactionStatus.REJECTED);
@@ -79,7 +87,9 @@ export class TransactionService implements OnModuleInit {
 
         try {
             const response = await firstValueFrom(
-                this.kafkaClient.send('user.validate', { userId })
+                this.kafkaClient.send('user.validate', { userId }).pipe(
+                    timeout(5000)
+                )
             )
             return response[0].status === 'valid';
         } catch (error) {
