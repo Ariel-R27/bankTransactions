@@ -21,18 +21,18 @@ Sistema de gestión de transacciones bancarias desarrollado bajo una arquitectur
 ---
 ## Tecnologies
 
-- *Node.js + NestJS
-- *TypeORM
-- *PostgreSQL
-- *Docker/Docker Compose
-- *Kafka (Bitnami)
-- *pnpm (Package manager)
-- *DBeaver (Optional)
-- *Postman (API Test)
-
----
+- *Node.js + NestJS*
+- *TypeORM*
+- *PostgreSQL*
+- *Docker/Docker Compose*
+- *Kafka (Bitnami)*
+- *pnpm (Package manager)*
+- *DBeaver (Optional)*
+- *Postman (API Test)*
 
 ## Proyect Structure
+
+```plaintext
 
 bankTransactions/
 ├── apps/
@@ -42,8 +42,7 @@ bankTransactions/
 ├── docker-compose.yml
 ├── package.json
 └── README.md
-
----
+```
 
 ## Dependencies
 
@@ -51,43 +50,42 @@ bankTransactions/
 - Docker Compose
 - pnpm
 
----
-
 ## Installation and Execution Guide
 
 1. Clone the repositorie
----
+
+```plaintext
     git clone
     cd bankTransactions 
----
+```
 
 2. Install all dependencies
 
----
+```plaintext
 pnpm install
----
+```
 
 3. Lift all services with Docker
 
----
+```plaintext
 sudo docker-compose up --build
+```
 
----
-  
 4. Verify the servicies
----
 
-- *Core Service: http://localhost:3000
-- *User Service: http://localhost:3001
-- *Account Service: http://localhost:3002
+```plaintext
 
----
+- *Core Service*: http://localhost:3000
+- *User Service*: http://localhost:3001
+- *Account Service*: http://localhost:3002
+
+```
 
 ## APIs
 
 Use Postman to test endpoints
 
-- *core Service (Transacciones): 
+- *core Service (Transacciones)*: 
     - *POST /transaction/create*: Create a temporal transaction
 
 - *user Service*:
