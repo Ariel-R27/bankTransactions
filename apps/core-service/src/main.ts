@@ -14,7 +14,7 @@ async function bootstrap() {
     transform: true,
   }));
 
-  app.connectMicroservice<MicroserviceOptions>({
+  /* app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
       client: {
@@ -25,6 +25,7 @@ async function bootstrap() {
       }
     },
   });
+  */
 
   await app.startAllMicroservices();
   //Por último, se inicia el servidor

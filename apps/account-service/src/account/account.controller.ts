@@ -31,7 +31,7 @@ export class AccountController {
         return { status: 'success', updatedBalance: updateAccount.amount };
     };
 
-    //Event to heard account validation by Kafka
+    /*Event to heard account validation by Kafka
     @EventPattern('account.validate')
     async validateAccountFromKafka(@Payload() message: any){
         //We retrieve the accountID of the message
@@ -61,4 +61,5 @@ export class AccountController {
 
         return { status: 'success', updatedBalance: updateAccount.amount };
     };
+    */
 }

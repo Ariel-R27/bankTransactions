@@ -32,9 +32,9 @@ export class AccountService {
             throw new Error('Account not found');
         }
 
+        const currentAmount = parseFloat(account.amount.toString());
         //Update account amount
-        account.amount += addedAmount;
-        
+        account.amount = parseFloat(( currentAmount + addedAmount).toFixed(2));
         return await this.accountRepository.save(account);
     };
 }

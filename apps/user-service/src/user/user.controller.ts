@@ -22,7 +22,7 @@ export class UserController {
         return { status: 'valid' };
     };
 
-    //Event to heard account validation by Kafka
+    /* Event to heard account validation by Kafka
     @EventPattern('user.validate')
     async validateAccountFromKafka(@Payload() message: any){
         //We retrieve the accountID of the message
@@ -41,5 +41,5 @@ export class UserController {
 
         console.log('Usuario valido');
             return { status: 'valid'}
-    }
+    } */
 }

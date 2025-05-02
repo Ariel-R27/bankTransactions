@@ -22,6 +22,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     }),
     TypeOrmModule.forFeature([Transaction]),
     HttpModule,
+    /*
     ClientsModule.register([
       {
         name: 'KAFKA_SERVICE',
@@ -36,6 +37,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
     ]),
+    */
   ],
   controllers: [AppController, TransactionController],
   providers: [AppService, TransactionService],

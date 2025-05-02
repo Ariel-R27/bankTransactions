@@ -8,16 +8,105 @@ import { parse } from 'path';
 import { ClientKafka } from '@nestjs/microservices';
 
 @Injectable()
-export class TransactionService implements OnModuleInit {
+export class TransactionService { 
+//export class TransactionService implements OnModuleInit {
     private readonly logger = new Logger(TransactionService.name);
 
     constructor(
         @InjectRepository(Transaction)
         private transactionRepository: Repository<Transaction>,
-        @Inject('KAFKA_SERVICE') private kafkaClient: ClientKafka,
-        //private httpService: HttpService
+        //@Inject('KAFKA_SERVICE') private kafkaClient: ClientKafka,
+        private httpService: HttpService
     ) { }
 
+    //This method works for an API's based architecture with
+    //synchronous communication
+    async createTemporalTransaction(data: {
+        userId: string;
+        accountId: string;
+        amount: number;
+        type: TransactionType;
+    }): Promise<Transaction> {
+
+        // Step 1: Create temp transacction
+        const transaction = this.transactionRepository.create({
+            userId: data.userId,
+            accountId: data.accountId,
+            amount: data.amount,
+            type: data.type,
+            status: TransactionStatus.PENDING,
+        });
+
+        const savedTransaction = await this.transactionRepository.save(transaction);
+        //Step 2: Validate user (user-service)
+        const userValid = await this.validateUserAccount(data.userId);
+
+        if (!userValid) {
+            //If the user isn't valid, we update transacction state to REJECTED 
+            await this.updateTransactionStatus(savedTransaction.id, TransactionStatus.REJECTED);
+            return savedTransaction;
+        }
+
+        //Step 3: Validate account (account-service)
+        const accountValid = await this.validateAccount(data.accountId);
+
+        if (!accountValid) {
+            //If the account isn't valid, we update transacction state to REJECTED
+            await this.updateTransactionStatus(savedTransaction.id, TransactionStatus.REJECTED);
+            return savedTransaction;
+        }
+
+        //IF account is valid, increase account amount
+        await this.updateAccountBalance(data.accountId, data.amount);
+
+        //Step 4: If is all OK, we update the transacction state to APROVED
+        await this.updateTransactionStatus(savedTransaction.id, TransactionStatus.APPROVED);
+        return savedTransaction;
+    };
+
+    async updateAccountBalance(accountId: string, amount: number) {
+        try {
+            const response = await firstValueFrom(
+                this.httpService.post(
+                    `http://account-service:3002/account/${accountId}/update-balance`, 
+                    { amount: parseFloat(amount.toString()) },
+                )
+            );
+            return response.data;
+        } catch(error) {
+            console.error('Error in update account amount', error);
+            throw new Error('Error in update account amount');
+        }
+    }
+
+    async validateUserAccount(userId: string): Promise<boolean>{
+        try {
+            const response = await firstValueFrom(
+                this.httpService.get(`http://user-service:3001/user/${userId}/validate`)
+            );
+            return response?.status === 200;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    async validateAccount(accountId: string): Promise<boolean>{
+        try {
+            const response = await firstValueFrom(
+            this.httpService.get(`http://account-service:3002/account/${accountId}/validate`)
+            );
+            return response?.status === 200;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    //Method to update transacction state
+    async updateTransactionStatus(transactionId: string, status: TransactionStatus){
+        await this.transactionRepository.update(transactionId, { status });    
+    }
+    
+    /*
     async onModuleInit() {
         //Subscribe to reply necesary topics
         this.kafkaClient.subscribeToResponseOf('user.validate');
@@ -25,10 +114,11 @@ export class TransactionService implements OnModuleInit {
         this.kafkaClient.subscribeToResponseOf('account.update-balance');
         
         await this.kafkaClient.connect();
-    }
+    } */
 
     //THis method works for an Event based architecture
     //with asynchronous communication and Kafka
+    /*
     async createTemporalTransaction(data: {
         userId: string;
         accountId: string;
@@ -130,94 +220,6 @@ export class TransactionService implements OnModuleInit {
     //Method to update transacction state
     async updateTransactionStatus(transactionId: string, status: TransactionStatus) {
         await this.transactionRepository.update(transactionId, { status });
-    }
-
-    //This method works for an API's based architecture with
-    //synchronous communication
-    /* 
-    async createTemporalTransaction(data: {
-        userId: string;
-        accountId: string;
-        amount: number;
-        type: TransactionType;
-    }): Promise<Transaction> {
-
-        // Step 1: Create temp transacction
-        const transaction = this.transactionRepository.create({
-            userId: data.userId,
-            accountId: data.accountId,
-            amount: data.amount,
-            type: data.type,
-            status: TransactionStatus.PENDING,
-        });
-
-        const savedTransaction = await this.transactionRepository.save(transaction);
-        //Step 2: Validate user (user-service)
-        const userValid = await this.validateUserAccount(data.userId);
-
-        if (!userValid) {
-            //If the user isn't valid, we update transacction state to REJECTED 
-            await this.updateTransactionStatus(savedTransaction.id, TransactionStatus.REJECTED);
-            return savedTransaction;
-        }
-
-        //Step 3: Validate account (account-service)
-        const accountValid = await this.validateAccount(data.accountId);
-
-        if (!accountValid) {
-            //If the account isn't valid, we update transacction state to REJECTED
-            await this.updateTransactionStatus(savedTransaction.id, TransactionStatus.REJECTED);
-            return savedTransaction;
-        }
-
-        //IF account is valid, increase account amount
-        await this.updateAccountBalance(data.accountId, data.amount);
-
-        //Step 4: If is all OK, we update the transacction state to APROVED
-        await this.updateTransactionStatus(savedTransaction.id, TransactionStatus.APPROVED);
-        return savedTransaction;
-    };
-
-    async updateAccountBalance(accountId: string, amount: number) {
-        try {
-            const response = await firstValueFrom(
-                this.httpService.post(
-                    `http://account-service:3002/account/${accountId}/update-balance`, 
-                    { amount: parseFloat(amount.toString()) },
-                )
-            );
-            return response.data;
-        } catch(error) {
-            console.error('Error in update account amount', error);
-            throw new Error('Error in update account amount');
-        }
-    }
-
-    async validateUserAccount(userId: string): Promise<boolean>{
-        try {
-            const response = await firstValueFrom(
-                this.httpService.get(`http://user-service:3001/user/${userId}/validate`)
-            );
-            return response?.status === 200;
-        } catch (error) {
-            return false;
-        }
-    };
-
-    async validateAccount(accountId: string): Promise<boolean>{
-        try {
-            const response = await this.httpService
-            .get(`http://account-service:3002/account/${accountId}/validate`)
-            .toPromise();
-            return response?.status === 200;
-        } catch (error) {
-            return false;
-        }
-    };
-
-    //Method to update transacction state
-    async updateTransactionStatus(transactionId: string, status: TransactionStatus){
-        await this.transactionRepository.update(transactionId, { status });    
     }
     */
 }
