@@ -1,3 +1,7 @@
+resource "aws_ecs_cluster" "main" {
+  name = "banking-microservices-cluster"
+}
+
 resource "aws_ecs_service" "core_service" {
   name            = "core-service"
   cluster         = aws_ecs_cluster.main.id
@@ -6,7 +10,10 @@ resource "aws_ecs_service" "core_service" {
   desired_count   = 1
 
   network_configuration {
-    subnets          = [aws_subnet.public_subnet.id]
+    subnets = [
+      aws_subnet.public_subnet_1.id,
+      aws_subnet.public_subnet_2.id
+    ]
     security_groups  = [aws_security_group.ecs_service_sg.id]
     assign_public_ip = true
   }
@@ -17,7 +24,7 @@ resource "aws_ecs_service" "core_service" {
     container_port   = 3000
   }
 
-  depends_on = [ aws_lb_listener.core_service_listener ]
+  depends_on = [aws_lb_listener.main]
 }
 
 resource "aws_ecs_service" "user_service" {
@@ -28,7 +35,10 @@ resource "aws_ecs_service" "user_service" {
   desired_count   = 1
 
   network_configuration {
-    subnets          = [aws_subnet.public_subnet.id]
+    subnets = [
+      aws_subnet.public_subnet_1.id,
+      aws_subnet.public_subnet_2.id
+    ]
     security_groups  = [aws_security_group.ecs_service_sg.id]
     assign_public_ip = true
   }
@@ -39,7 +49,7 @@ resource "aws_ecs_service" "user_service" {
     container_port   = 3001
   }
 
-  depends_on = [ aws_lb_listener.user_service_listener ]
+  depends_on = [aws_lb_listener.main]
 }
 
 resource "aws_ecs_service" "account_service" {
@@ -50,7 +60,10 @@ resource "aws_ecs_service" "account_service" {
   desired_count   = 1
 
   network_configuration {
-    subnets          = [aws_subnet.public_subnet.id]
+    subnets = [
+      aws_subnet.public_subnet_1.id,
+      aws_subnet.public_subnet_2.id
+    ]
     security_groups  = [aws_security_group.ecs_service_sg.id]
     assign_public_ip = true
   }
@@ -61,6 +74,6 @@ resource "aws_ecs_service" "account_service" {
     container_port   = 3002
   }
 
-  depends_on = [ aws_lb_listener.account_service_listener ]
+  depends_on = [aws_lb_listener.main]
 }
 

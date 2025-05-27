@@ -7,7 +7,7 @@ resource "aws_ecs_task_definition" "core_service" {
     execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
     task_role_arn = aws_iam_role.ecs_task_execution_role.arn
 
-    container_definitions = jsondecode([
+    container_definitions = jsonencode([
         {
             name = "core-service"
             image = "tuusuario/core-service:latest"
@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "user_service" {
     execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
     task_role_arn = aws_iam_role.ecs_task_execution_role.arn
 
-    container_definitions = jsondecode([
+    container_definitions = jsonencode([
         {
             name = "user-service"
             image = "tuusuario/user-service:latest"
@@ -71,7 +71,7 @@ resource "aws_ecs_task_definition" "account_service" {
     execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
     task_role_arn = aws_iam_role.ecs_task_execution_role.arn
 
-    container_definitions = jsondecode([
+    container_definitions = jsonencode([
         {
             name = "account-service"
             image = "tuusuario/account-service:latest"
